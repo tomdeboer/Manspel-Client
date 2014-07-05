@@ -1,0 +1,3 @@
+[submodule "manspel"]
+	path = manspel
+	url = https://github.com/mauvm/manspel.git

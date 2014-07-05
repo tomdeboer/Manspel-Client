@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Board Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="https://raw.githubusercontent.com/DimitarChristoff/primish/master/primish-min.js"></script>
+    <style>
+        body {
+            font-family: Verdana;
+        }
+        
+        #gametable{
+            width: 800px;
+            height: 800px;
+            box-sizing: border-box;
+            
+            border: 2px solid black;
+        	border-collapse: collapse;
+        	background-color: white;            
+        }
+        #gametable td.selected{
+            background-color: red !important;
+        }
+        
+        #gametable tr:nth-child(odd)  td:nth-child(odd)  { background-color: black; color: white; } 
+        #gametable tr:nth-child(odd)  td:nth-child(even) { background-color: white; color: black; } 
+        #gametable tr:nth-child(even) td:nth-child(odd)  { background-color: white; color: black; } 
+        #gametable tr:nth-child(even) td:nth-child(even) { background-color: black; color: white; } 
+    </style>
+</head>
+<body>
+    <table id="gametable" border="0"></table>
+    <script>
+        (function( undefined ){
+            var width  = 10;
+            var height = 10;
+            
+            function positionToIndex(x, y) {
+                if (x < 0) { x += width; }
+                if (y < 0) { y += height; }
+                return y * width + x;
+            }
+            
+            var table = document.getElementById('gametable');
+            
+            for (var y = height - 1; y >= 0; --y) {
+                var row = document.createElement('tr');
+                for (var x = 0; x < width; ++x) {
+                    var cell    = document.createElement('td');
+                    cell.title  = String.fromCharCode(65 + x) + (y + 1);
+                    cell.id     = 'cell_' + x + '_' + y;
+                    cell.width  = 100 / width;
+                    cell.height = 100 / height;
+                    
+                    cell.setAttribute('manspelIndex', positionToIndex(x, y));
+                    
+                    cell.innerHTML = cell.title;
+                    
+                    cell.style.textAlign     = 'center';
+                    cell.style.verticalAlign = 'middle';
+                    cell.style.cursor        = 'pointer';
+                    
+                    cell.classList.add('cell');
+
+                    row.appendChild(cell);
+                    
+                    cell.onclick = function (e){
+                        var cell = e.target;
+                        
+                        var previouslySelected = document.querySelector('#gametable .cell.selected');
+
+                        if ( ! previouslySelected ){
+                            // New selection
+                            cell.classList.add('selected');
+                        }else if (previouslySelected == cell){
+                            // Cancel selection
+                            cell.classList.remove('selected')
+                        }else if (previouslySelected != cell){
+                            // Attempt to command
+                            alert('moving from index ' + previouslySelected.getAttribute('manspelIndex') + ' to ' + cell.getAttribute('manspelIndex'));
+                            previouslySelected.classList.remove('selected');
+                        }else{
+                            throw Error('Unsupported action');
+                        }
+                    }
+                }
+
+                table.appendChild(row);
+            }
+            
+        })();
+    </script>
+</body>
+</html>
