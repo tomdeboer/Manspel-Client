@@ -3,7 +3,8 @@
 <head>
     <title>Board Example</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="text/javascript" src="https://raw.githubusercontent.com/DimitarChristoff/primish/master/primish-min.js"></script>
+    <script type="text/javascript" src="primish-min.js"></script>
+    <script type="text/javascript" src="manspel.js"></script>
     <style>
         body {
             font-family: Verdana;
@@ -18,20 +19,35 @@
         	border-collapse: collapse;
         	background-color: white;            
         }
+        #gametable td{
+            background: gray center center no-repeat;
+        }
         #gametable td.selected{
             background-color: red !important;
         }
-        
-        #gametable tr:nth-child(odd)  td:nth-child(odd)  { background-color: black; color: white; } 
-        #gametable tr:nth-child(odd)  td:nth-child(even) { background-color: white; color: black; } 
-        #gametable tr:nth-child(even) td:nth-child(odd)  { background-color: white; color: black; } 
-        #gametable tr:nth-child(even) td:nth-child(even) { background-color: black; color: white; } 
+        #gametable td.player_1{
+            background-image: url('lib/img/player_1.png');
+        }
+        #gametable td.player_2{
+            background-image: url('lib/img/player_2.png');
+        }
+        #gametable tr:nth-child(odd)  td:nth-child(odd)  { background-color: black; color: white; }
+        #gametable tr:nth-child(odd)  td:nth-child(even) { background-color: white; color: black; }
+        #gametable tr:nth-child(even) td:nth-child(odd)  { background-color: white; color: black; }
+        #gametable tr:nth-child(even) td:nth-child(even) { background-color: black; color: white; }
     </style>
 </head>
 <body>
     <table id="gametable" border="0"></table>
     <script>
         (function( undefined ){
+
+        	var manspel = new Manspel();
+
+        	console.log(manspel, manspel.getBoard());
+
+
+
             var width  = 10;
             var height = 10;
             
@@ -46,6 +62,8 @@
             for (var y = height - 1; y >= 0; --y) {
                 var row = document.createElement('tr');
                 for (var x = 0; x < width; ++x) {
+                    var field = manspel.getBoard().getFieldAtPosition(x, y);
+
                     var cell    = document.createElement('td');
                     cell.title  = String.fromCharCode(65 + x) + (y + 1);
                     cell.id     = 'cell_' + x + '_' + y;
@@ -61,6 +79,10 @@
                     cell.style.cursor        = 'pointer';
                     
                     cell.classList.add('cell');
+                    if (field.getPlayer()) {
+                        cell.classList.add('player');
+                        cell.classList.add('player_' + field.getPlayer().getNumber());
+                    }
 
                     row.appendChild(cell);
                     
@@ -69,18 +91,19 @@
                         
                         var previouslySelected = document.querySelector('#gametable .cell.selected');
 
-                        if ( ! previouslySelected ){
+                        if (!previouslySelected && cell.classList.contains('player')) {
                             // New selection
                             cell.classList.add('selected');
-                        }else if (previouslySelected == cell){
+                        }else if (previouslySelected == cell) {
                             // Cancel selection
                             cell.classList.remove('selected')
-                        }else if (previouslySelected != cell){
+                        }else if (previouslySelected != cell && !cell.classList.contains('player')) {
                             // Attempt to command
                             alert('moving from index ' + previouslySelected.getAttribute('manspelIndex') + ' to ' + cell.getAttribute('manspelIndex'));
                             previouslySelected.classList.remove('selected');
-                        }else{
-                            throw Error('Unsupported action');
+                        } else {
+                            console.warn('[Manspel] Unsupported action');
+                            return false;
                         }
                     }
                 }
