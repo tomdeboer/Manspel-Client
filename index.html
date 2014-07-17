@@ -64,28 +64,25 @@
                 for (var x = 0; x < width; ++x) {
                     var field = manspel.getBoard().getFieldAtPosition(x, y);
 
-                    var cell    = document.createElement('td');
-                    cell.title  = String.fromCharCode(65 + x) + (y + 1);
-                    cell.id     = 'cell_' + x + '_' + y;
-                    cell.width  = 100 / width;
-                    cell.height = 100 / height;
-                    
-                    cell.setAttribute('manspelIndex', positionToIndex(x, y));
-                    
+                    var cell       = document.createElement('td');
+                    cell.id        = 'cell_' + x + '_' + y;
+                    cell.title     = String.fromCharCode(65 + x) + (y + 1);
+                    cell.width     = 100 / width;
+                    cell.height    = 100 / height;
                     cell.innerHTML = cell.title;
-                    
+
+                    cell.setAttribute('manspelIndex', positionToIndex(x, y));
+
                     cell.style.textAlign     = 'center';
                     cell.style.verticalAlign = 'middle';
                     cell.style.cursor        = 'pointer';
-                    
+
                     cell.classList.add('cell');
                     if (field.getPlayer()) {
                         cell.classList.add('player');
                         cell.classList.add('player_' + field.getPlayer().getNumber());
                     }
 
-                    row.appendChild(cell);
-                    
                     cell.onclick = function (e){
                         var cell = e.target;
                         
@@ -106,6 +103,8 @@
                             return false;
                         }
                     }
+
+                    row.appendChild(cell);
                 }
 
                 table.appendChild(row);
