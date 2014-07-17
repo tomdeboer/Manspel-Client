@@ -38,6 +38,12 @@ var Board = primish({
         if (y < 0) { y += this._height; }
         return y * this._width + x;
     },
+    indexToPosition: function (index) {
+        return {
+            x: Math.floor(index / this._width),
+            y: index % this._width
+        };
+    },
     reset: function () {
         var self = this;
         var i;
@@ -60,7 +66,7 @@ var Board = primish({
             this.positionToIndex(1, -1)
         ].forEach(function (disabledIndex) {
 
-        	self.getField(disabledIndex).setDisabled(true);
+            self.getField(disabledIndex).setDisabled(true);
         });
 
         // > Player fields
@@ -85,6 +91,59 @@ var Board = primish({
         fillPlayerFields(this._game.getPlayerTwo(), true);
     },
     canMove: function (player, from, to) {
+        var fromField    = this.getField(from);
+        var toField      = this.getField(to);
+
+        var fromPosition = this.indexToPosition(from);
+        var toPosition   = this.indexToPosition(to);
+
+        if (fromField.getPlayer() !== player || !toField || toField.getPlayer()) {
+            // Field is invalid or already taken
+            return false;
+        }
+
+        var i; // Iterator
+
+        // Set direction to +1 or -1 if target's x is higher or lower than source's x
+        var xd = toPosition.x > fromPosition.x ? 1 : -1, // X direction
+            yd = toPosition.y > fromPosition.y ? 1 : -1; // Y direction
+
+        if (fromPosition.x === toPosition.x) {
+            // Moving along the same x-axis
+            for (i = fromPosition.y + yd; i != toPosition.y; i += yd) {
+                // If a field between from and to on the same axis has no player on it, you can't skip over it
+                if (!this.getFieldAtPosition(toPosition.x, i).getPlayer()) {
+                    return false;
+                }
+            }
+
+            return true;
+        } else if (fromPosition.y === toPosition.y ){
+            // Moving along the same Y-axis
+
+            for (i = fromPosition.x + xd; i != toPosition.x; i += xd) {
+                // If a field between from and to on the same axis has no player on it, you can't skip over it
+                if (this.getFieldAtPosition(i, toPosition.y).getPlayer() === null) {
+                    return false;
+                }
+            }
+
+            return true;
+        }else if (Math.abs(fromPosition.x - toPosition.x) === Math.abs(fromPosition.y - toPosition.y)) {
+            // Moving diagonally
+            for (i = Math.abs(fromPosition.x - toPosition.x) - 1; i != 0; i -= 1) {
+                // If a field between from and to on the same axis has no player on it, you can't skip over it
+                if (this.getFieldAtPosition(fromPosition.x + i * xd, fromPosition.y + i * yd).getPlayer() === null) {
+                    return false;
+                }
+            }
+
+            return true;
+        }else{
+            // Not same axis, nor diagonally. Definitely an invalid move
+            return false;
+        }
+
         return false;
     },
     move: function (player, from, to) {
