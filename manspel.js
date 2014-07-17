@@ -41,7 +41,6 @@ var Board = primish({
     reset: function () {
     	console.log(this);
 
-
         var self = this;
         var i;
 
@@ -140,7 +139,6 @@ var Manspel = primish({
     constructor: function () {
         this._playerOne  = new Player(this, 1);
         this._playerTwo  = new Player(this, 2);
-        this._playerTurn = this._playerOne;
         this._playerTurn = this._playerOne;
         this._board      = new Board(this, 10, 10);
     },
