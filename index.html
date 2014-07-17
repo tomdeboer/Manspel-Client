@@ -94,7 +94,7 @@
                         }else if (previouslySelected == cell) {
                             // Cancel selection
                             cell.classList.remove('selected')
-                        }else if (previouslySelected != cell && !cell.classList.contains('player')) {
+                        }else if (previouslySelected && previouslySelected != cell && !cell.classList.contains('player')) {
                             // Attempt to command
                             alert('moving from index ' + previouslySelected.getAttribute('manspelIndex') + ' to ' + cell.getAttribute('manspelIndex'));
                             previouslySelected.classList.remove('selected');
