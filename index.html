@@ -68,12 +68,18 @@
                 return y * width + x;
             }
             function movePlayer(playerNumber, from, to){
+                console.log("movePlayer", arguments);
                 var player = playerNumber === "1" ? manspel.getPlayerOne() : manspel.getPlayerTwo();
 
-                if (manspel.getBoard().canMove(player, from, to)){
-                    alert('[OK] moving player ' + player + ' from index ' + from + ' to ' + to);
+                var fromPoint = manspel.getBoard().indexToPosition(from);
+                var toPoint   = manspel.getBoard().indexToPosition(to);
+
+                console.log("movePlayer", from, to, fromPoint, toPoint);
+
+                if (player.canMove(from, to)){
+                    alert('[OK] moving player ' + player.getNumber() + ' from index ' + from + ' to ' + to );
                 } else {
-                    alert('[ERROR] can not move player ' + player + ' from index ' + from + ' to ' + to);
+                    alert('[ERROR] can not move player ' + player.getNumber() + ' from index ' + from + ' to ' + to);
                 }
             }
             
@@ -87,8 +93,8 @@
                     var cell       = document.createElement('td');
                     cell.id        = 'cell_' + x + '_' + y;
                     cell.title     = String.fromCharCode(65 + x) + (y + 1);
-                    cell.width     = 100 / width;
-                    cell.height    = 100 / height;
+                    cell.width     = 100 / width; // Percent
+                    cell.height    = 100 / height;// Percent
                     cell.innerHTML = cell.title;
 
                     cell.setAttribute('manspelIndex', positionToIndex(x, y));
