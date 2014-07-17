@@ -20,15 +20,28 @@
         	background-color: white;            
         }
         #gametable td{
+            position: relative;;
             background: gray center center no-repeat;
         }
         #gametable td.selected{
             background-color: red !important;
         }
-        #gametable td.player_1{
+        #gametable td.disabled{
+            color: transparent !important;
+        }
+        #gametable td.disabled:after{
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5) !important;
+            content: "";
+        }
+        #gametable td[manspelplayernumber="1"]{
             background-image: url('lib/img/player_1.png');
         }
-        #gametable td.player_2{
+        #gametable td[manspelplayernumber="2"]{
             background-image: url('lib/img/player_2.png');
         }
         #gametable tr:nth-child(odd)  td:nth-child(odd)  { background-color: black; color: white; }
@@ -46,8 +59,6 @@
 
         	console.log(manspel, manspel.getBoard());
 
-
-
             var width  = 10;
             var height = 10;
             
@@ -55,6 +66,15 @@
                 if (x < 0) { x += width; }
                 if (y < 0) { y += height; }
                 return y * width + x;
+            }
+            function movePlayer(playerNumber, from, to){
+                var player = playerNumber === "1" ? manspel.getPlayerOne() : manspel.getPlayerTwo();
+
+                if (manspel.getBoard().canMove(player, from, to)){
+                    alert('[OK] moving player ' + player + ' from index ' + from + ' to ' + to);
+                } else {
+                    alert('[ERROR] can not move player ' + player + ' from index ' + from + ' to ' + to);
+                }
             }
             
             var table = document.getElementById('gametable');
@@ -80,7 +100,9 @@
                     cell.classList.add('cell');
                     if (field.getPlayer()) {
                         cell.classList.add('player');
-                        cell.classList.add('player_' + field.getPlayer().getNumber());
+                        cell.setAttribute('manspelPlayerNumber', field.getPlayer().getNumber());
+                    }else if (field.getDisabled()){
+                        cell.classList.add('disabled');
                     }
 
                     cell.onclick = function (e){
@@ -93,11 +115,12 @@
                             cell.classList.add('selected');
                         }else if (previouslySelected == cell) {
                             // Cancel selection
-                            cell.classList.remove('selected')
+                            cell.classList.remove('selected');
                         }else if (previouslySelected && previouslySelected != cell && !cell.classList.contains('player')) {
                             // Attempt to command
-                            alert('moving from index ' + previouslySelected.getAttribute('manspelIndex') + ' to ' + cell.getAttribute('manspelIndex'));
                             previouslySelected.classList.remove('selected');
+
+                            movePlayer(previouslySelected.getAttribute('manspelPlayerNumber'), previouslySelected.getAttribute('manspelIndex'), cell.getAttribute('manspelIndex'));
                         } else {
                             console.warn('[Manspel] Unsupported action');
                             return false;

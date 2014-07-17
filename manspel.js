@@ -39,8 +39,6 @@ var Board = primish({
         return y * this._width + x;
     },
     reset: function () {
-    	console.log(this);
-
         var self = this;
         var i;
 
@@ -61,7 +59,7 @@ var Board = primish({
             this.positionToIndex(0, -1),
             this.positionToIndex(1, -1)
         ].forEach(function (disabledIndex) {
-        	console.log(disabledIndex, self.getField(disabledIndex));
+
         	self.getField(disabledIndex).setDisabled(true);
         });
 
@@ -122,6 +120,9 @@ var Field = primish({
     },
     setPlayer: function (player) {
         this._player = player;
+    },
+    getDisabled: function (disabled) {
+       return this._disabled;
     },
     setDisabled: function (disabled) {
        this._disabled = disabled;
