@@ -56,6 +56,7 @@
         (function( undefined ){
 
         	var manspel = new Manspel();
+            var board   = manspel.getBoard();
 
         	console.log(manspel, manspel.getBoard());
 
@@ -71,8 +72,8 @@
                 console.log("movePlayer", arguments);
                 var player = playerNumber === "1" ? manspel.getPlayerOne() : manspel.getPlayerTwo();
 
-                var fromPoint = manspel.getBoard().indexToPosition(from);
-                var toPoint   = manspel.getBoard().indexToPosition(to);
+                var fromPoint = board.indexToPosition(from);
+                var toPoint   = board.indexToPosition(to);
 
                 console.log("movePlayer", from, to, fromPoint, toPoint);
 
@@ -82,62 +83,65 @@
                     alert('[ERROR] can not move player ' + player.getNumber() + ' from index ' + from + ' to ' + to);
                 }
             }
-            
-            var table = document.getElementById('gametable');
-            
-            for (var y = height - 1; y >= 0; --y) {
-                var row = document.createElement('tr');
-                for (var x = 0; x < width; ++x) {
-                    var field = manspel.getBoard().getFieldAtPosition(x, y);
+            function render(){
+                var table = document.getElementById('gametable');
+                
+                for (var y = height - 1; y >= 0; --y) {
+                    var row = document.createElement('tr');
+                    for (var x = 0; x < width; ++x) {
+                        var field = board.getFieldAtPosition(x, y);
 
-                    var cell       = document.createElement('td');
-                    cell.id        = 'cell_' + x + '_' + y;
-                    cell.title     = String.fromCharCode(65 + x) + (y + 1);
-                    cell.width     = 100 / width; // Percent
-                    cell.height    = 100 / height;// Percent
-                    cell.innerHTML = cell.title;
+                        var cell       = document.createElement('td');
+                        cell.id        = 'cell_' + board.positionToIndex(x, y);
+                        cell.title     = String.fromCharCode(65 + x) + (y + 1);
+                        cell.width     = 100 / width; // Percent
+                        cell.height    = 100 / height;// Percent
+                        cell.innerHTML = cell.title;
 
-                    cell.setAttribute('manspelIndex', positionToIndex(x, y));
+                        cell.setAttribute('manspelIndex', positionToIndex(x, y));
 
-                    cell.style.textAlign     = 'center';
-                    cell.style.verticalAlign = 'middle';
-                    cell.style.cursor        = 'pointer';
+                        cell.style.textAlign     = 'center';
+                        cell.style.verticalAlign = 'middle';
+                        cell.style.cursor        = 'pointer';
 
-                    cell.classList.add('cell');
-                    if (field.getPlayer()) {
-                        cell.classList.add('player');
-                        cell.setAttribute('manspelPlayerNumber', field.getPlayer().getNumber());
-                    }else if (field.getDisabled()){
-                        cell.classList.add('disabled');
-                    }
-
-                    cell.onclick = function (e){
-                        var cell = e.target;
-                        
-                        var previouslySelected = document.querySelector('#gametable .cell.selected');
-
-                        if (!previouslySelected && cell.classList.contains('player')) {
-                            // New selection
-                            cell.classList.add('selected');
-                        }else if (previouslySelected == cell) {
-                            // Cancel selection
-                            cell.classList.remove('selected');
-                        }else if (previouslySelected && previouslySelected != cell && !cell.classList.contains('player')) {
-                            // Attempt to command
-                            previouslySelected.classList.remove('selected');
-
-                            movePlayer(previouslySelected.getAttribute('manspelPlayerNumber'), previouslySelected.getAttribute('manspelIndex'), cell.getAttribute('manspelIndex'));
-                        } else {
-                            console.warn('[Manspel] Unsupported action');
-                            return false;
+                        cell.classList.add('cell');
+                        if (field.getPlayer()) {
+                            cell.classList.add('player');
+                            cell.setAttribute('manspelPlayerNumber', field.getPlayer().getNumber());
+                        }else if (field.getDisabled()){
+                            cell.classList.add('disabled');
                         }
+
+                        cell.onclick = function (e){
+                            var cell = e.target;
+                            
+                            var previouslySelected = document.querySelector('#gametable .cell.selected');
+
+                            if (!previouslySelected && cell.classList.contains('player')) {
+                                // New selection
+                                cell.classList.add('selected');
+                            }else if (previouslySelected == cell) {
+                                // Cancel selection
+                                cell.classList.remove('selected');
+                            }else if (previouslySelected && previouslySelected != cell && !cell.classList.contains('player')) {
+                                // Attempt to command
+                                previouslySelected.classList.remove('selected');
+
+                                movePlayer(previouslySelected.getAttribute('manspelPlayerNumber'), previouslySelected.getAttribute('manspelIndex'), cell.getAttribute('manspelIndex'));
+                            } else {
+                                console.warn('[Manspel] Unsupported action');
+                                return false;
+                            }
+                        }
+
+                        row.appendChild(cell);
                     }
 
-                    row.appendChild(cell);
+                    table.appendChild(row);
                 }
-
-                table.appendChild(row);
             }
+
+            render();
             
         })();
     </script>
