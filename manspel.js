@@ -41,8 +41,8 @@ var Board = primish({
     },
     indexToPosition: function (index) {
         return {
-            x: Math.floor(index / this._width),
-            y: index % this._width
+            x: index % this._width,
+            y: Math.floor(index / this._width)
         };
     },
     reset: function () {
@@ -93,6 +93,8 @@ var Board = primish({
     move: function (player, from, to, _simulate) {
         var simulate = !!_simulate; // Cast to boolean
 
+        console.log("Moving player", player.getNumber(), "from", from, "to", to, "Simulate:", simulate);
+
         var fromField    = this.getField(from);
         var toField      = this.getField(to);
 
@@ -135,6 +137,10 @@ var Board = primish({
                     f.setPlayer(null);
                 }
             }
+
+            fromField.setPlayer(null);
+            toField.setPlayer(player);
+
             this._game.turn();
 
             return true;
@@ -148,6 +154,10 @@ var Board = primish({
                     return false;
                 }
             }
+
+            fromField.setPlayer(null);
+            toField.setPlayer(player);
+
             this._game.turn();
 
             return true;
@@ -160,6 +170,10 @@ var Board = primish({
                     return false;
                 }
             }
+
+            fromField.setPlayer(null);
+            toField.setPlayer(player);
+
             this._game.turn();
 
             return true;
@@ -254,7 +268,7 @@ var Manspel = primish({
         }
     },
     turn: function () {
-        this._playerTurn = this.otherPayer();
+        this._playerTurn = this.otherPlayer();
         this.trigger('turn');
     }
 });
