@@ -63,11 +63,6 @@
             var width  = 10;
             var height = 10;
             
-            function positionToIndex(x, y) {
-                if (x < 0) { x += width; }
-                if (y < 0) { y += height; }
-                return y * width + x;
-            }
             function movePlayer(playerNumber, from, to){
                 console.log("movePlayer", arguments);
                 var player = playerNumber === "1" ? manspel.getPlayerOne() : manspel.getPlayerTwo();
@@ -77,11 +72,34 @@
 
                 console.log("movePlayer", from, to, fromPoint, toPoint);
 
-                if (player.canMove(from, to)){
-                    alert('[OK] moving player ' + player.getNumber() + ' from index ' + from + ' to ' + to );
+                if (board.move(player, from, to)){
+                    alert('[OK] moved player ' + player.getNumber() + ' from index ' + from + ' to ' + to );
                 } else {
                     alert('[ERROR] can not move player ' + player.getNumber() + ' from index ' + from + ' to ' + to);
                 }
+            }
+            function getDOMCell (x, y, index) {
+                var cell = document.getElementById('cell_' + index );
+                if (cell) {
+                    return cell;
+                } else {
+                    cell = document.createElement('td');
+                    cell.id        = 'cell_' + index;
+                    cell.title     = String.fromCharCode(65 + x) + (y + 1);
+                    cell.width     = 100 / width; // Percent
+                    cell.height    = 100 / height;// Percent
+                    cell.innerHTML = cell.title;
+
+                    cell.setAttribute('manspelIndex', board.positionToIndex(x, y));
+
+                    cell.style.textAlign     = 'center';
+                    cell.style.verticalAlign = 'middle';
+                    cell.style.cursor        = 'pointer';
+
+                    cell.classList.add('cell');
+                }
+
+                return cell;
             }
             function render(){
                 var table = document.getElementById('gametable');
@@ -89,27 +107,21 @@
                 for (var y = height - 1; y >= 0; --y) {
                     var row = document.createElement('tr');
                     for (var x = 0; x < width; ++x) {
-                        var field = board.getFieldAtPosition(x, y);
+                        var index = board.positionToIndex(x, y)
+                        var field = board.getField(index);
 
-                        var cell       = document.createElement('td');
-                        cell.id        = 'cell_' + board.positionToIndex(x, y);
-                        cell.title     = String.fromCharCode(65 + x) + (y + 1);
-                        cell.width     = 100 / width; // Percent
-                        cell.height    = 100 / height;// Percent
-                        cell.innerHTML = cell.title;
+                        var cell = getDOMCell(x, y, index);
 
-                        cell.setAttribute('manspelIndex', positionToIndex(x, y));
-
-                        cell.style.textAlign     = 'center';
-                        cell.style.verticalAlign = 'middle';
-                        cell.style.cursor        = 'pointer';
-
-                        cell.classList.add('cell');
                         if (field.getPlayer()) {
                             cell.classList.add('player');
                             cell.setAttribute('manspelPlayerNumber', field.getPlayer().getNumber());
-                        }else if (field.getDisabled()){
-                            cell.classList.add('disabled');
+                        }else {
+                            cell.classList.remove('player');
+                            cell.removeAttribute('manspelPlayerNumber');
+
+                            if (field.getDisabled()) {
+                                cell.classList.add('disabled');
+                            }
                         }
 
                         cell.onclick = function (e){
@@ -142,6 +154,7 @@
             }
 
             render();
+            manspel.on('turn', render);
             
         })();
     </script>

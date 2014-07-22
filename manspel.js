@@ -1,4 +1,5 @@
-
+/*jslint browser: true, devel: true, node: true, nomen: true, unparam: true */
+/*global primish, emitter, Player, Field */
 var Board = primish({
     implement: [emitter],
     constructor: function (game, width, height) {
@@ -55,7 +56,7 @@ var Board = primish({
 
         // Initial setup
         // > Disabled fields
-        var disabledFields = [
+        [
             // Lower right corner
             this.positionToIndex(-1, 0),
             this.positionToIndex(-2, 0),
@@ -65,7 +66,6 @@ var Board = primish({
             this.positionToIndex(0, -1),
             this.positionToIndex(1, -1)
         ].forEach(function (disabledIndex) {
-
             self.getField(disabledIndex).setDisabled(true);
         });
 
@@ -90,7 +90,9 @@ var Board = primish({
         fillPlayerFields(this._game.getPlayerOne());
         fillPlayerFields(this._game.getPlayerTwo(), true);
     },
-    canMove: function (player, from, to) {
+    move: function (player, from, to, _simulate) {
+        var simulate = !!_simulate; // Cast to boolean
+
         var fromField    = this.getField(from);
         var toField      = this.getField(to);
 
@@ -109,50 +111,64 @@ var Board = primish({
             yd = toPosition.y > fromPosition.y ? 1 : -1; // Y direction
 
         if (fromPosition.x === toPosition.x) {
-            // Moving along the same x-axis
-            for (i = fromPosition.y + yd; i != toPosition.y; i += yd) {
-                // If a field between from and to on the same axis has no player on it, you can't skip over it
-                if (!this.getFieldAtPosition(toPosition.x, i).getPlayer()) {
+            // Moving along the same x-axis, starting one field ahead
+
+            var x, // X position 
+                y, // Y position
+                f, // Field
+                p; // Player at field
+
+
+            for (i = fromPosition.y + yd; i !== toPosition.y; i += yd) {
+                x = toPosition.x;                  // X position 
+                y = i;                             // Y position
+                f = this.getFieldAtPosition(x, y); // Field
+                p = f.getPlayer();                 // Player at field
+
+                if (p === null) {
+                    // Field is empty; if a field between from and to on the same axis,
+                    // has no player on it, the player can't skip over it
                     return false;
                 }
+                if (p !== player && simulate === false) {
+                    // Jumping over another player; kills it
+                    f.setPlayer(null);
+                }
             }
+            this._game.turn();
 
             return true;
-        } else if (fromPosition.y === toPosition.y ){
+        }
+        if (fromPosition.y === toPosition.y) {
             // Moving along the same Y-axis
 
-            for (i = fromPosition.x + xd; i != toPosition.x; i += xd) {
+            for (i = fromPosition.x + xd; i !== toPosition.x; i += xd) {
                 // If a field between from and to on the same axis has no player on it, you can't skip over it
                 if (this.getFieldAtPosition(i, toPosition.y).getPlayer() === null) {
                     return false;
                 }
             }
+            this._game.turn();
 
             return true;
-        }else if (Math.abs(fromPosition.x - toPosition.x) === Math.abs(fromPosition.y - toPosition.y)) {
+        }
+        if (Math.abs(fromPosition.x - toPosition.x) === Math.abs(fromPosition.y - toPosition.y)) {
             // Moving diagonally
-            for (i = Math.abs(fromPosition.x - toPosition.x) - 1; i != 0; i -= 1) {
+            for (i = Math.abs(fromPosition.x - toPosition.x) - 1; i !== 0; i -= 1) {
                 // If a field between from and to on the same axis has no player on it, you can't skip over it
                 if (this.getFieldAtPosition(fromPosition.x + i * xd, fromPosition.y + i * yd).getPlayer() === null) {
                     return false;
                 }
             }
+            this._game.turn();
 
             return true;
-        }else{
-            // Not same axis, nor diagonally. Definitely an invalid move
-            return false;
         }
 
         return false;
     },
-    move: function (player, from, to) {
-        if (!this.canMove(player, from, to)) {
-            return false;
-        }
-
-        this.trigger('move', player, from, to);
-        return true;
+    canMove: function (player, from, to) {
+        return this.move(player, from, to, 'simulate');
     }
 });
 
@@ -181,10 +197,10 @@ var Field = primish({
         this._player = player;
     },
     getDisabled: function (disabled) {
-       return this._disabled;
+        return this._disabled;
     },
     setDisabled: function (disabled) {
-       this._disabled = disabled;
+        this._disabled = disabled;
     },
     getPlayer: function () {
         return this._player;
@@ -215,29 +231,30 @@ var Manspel = primish({
         return this._playerTurn;
     },
     otherPlayer: function (player) {
-        if (player === this._playerOne) {
-            return this._playerTwo;
-        } else if (player === this._playerTwo) {
-            return this._playerOne;
+        if (player === undefined) {
+            return this.otherPlayer(this._playerTurn);
         }
+
+        return (player === this._playerOne) ? this._playerTwo : this._playerOne;
     },
     isFinished: function () {
-        return  this._board.getPlayerFields(this._playerOne).length === 0 ||
-                this._board.getPlayerFields(this._playerTwo).length === 0;
+        return this._board.getPlayerFields(this._playerOne).length === 0 ||
+               this._board.getPlayerFields(this._playerTwo).length === 0;
     },
     getWinner: function () {
-        if (! this.isFinished()) {
+        if (!this.isFinished()) {
             return;
         }
-        if (this._board.getPlayerFields(this._playerTwo).length === 0) {
-            return this._playerOne;
-        } else {
-            return this._playerTwo;
-        }
+
+        return (this._board.getPlayerFields(this._playerTwo).length === 0) ? this._playerOne : this._playerTwo;
     },
     getLoser: function () {
         if (this.isFinished()) {
             return this.otherPlayer(this.getWinner());
         }
+    },
+    turn: function () {
+        this._playerTurn = this.otherPayer();
+        this.trigger('turn');
     }
 });
