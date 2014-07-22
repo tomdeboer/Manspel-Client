@@ -102,7 +102,7 @@ var Board = primish({
         var toPosition   = this.indexToPosition(to);
 
         if (fromField.getPlayer() !== player || !toField || toField.getPlayer()) {
-            // Field is invalid or already taken
+            // If fromField is not owned by player or toField already taken
             return false;
         }
 
@@ -112,14 +112,13 @@ var Board = primish({
         var xd = toPosition.x > fromPosition.x ? 1 : -1, // X direction
             yd = toPosition.y > fromPosition.y ? 1 : -1; // Y direction
 
+        var x, // X position 
+            y, // Y position
+            f, // Field
+            p; // Player at field
+
         if (fromPosition.x === toPosition.x) {
             // Moving along the same x-axis, starting one field ahead
-
-            var x, // X position 
-                y, // Y position
-                f, // Field
-                p; // Player at field
-
 
             for (i = fromPosition.y + yd; i !== toPosition.y; i += yd) {
                 x = toPosition.x;                  // X position 
@@ -137,11 +136,12 @@ var Board = primish({
                     f.setPlayer(null);
                 }
             }
+            if (simulate === false) {
+                fromField.setPlayer(null);
+                toField.setPlayer(player);
 
-            fromField.setPlayer(null);
-            toField.setPlayer(player);
-
-            this._game.turn();
+                this._game.turn();
+            }
 
             return true;
         }
@@ -149,32 +149,54 @@ var Board = primish({
             // Moving along the same Y-axis
 
             for (i = fromPosition.x + xd; i !== toPosition.x; i += xd) {
-                // If a field between from and to on the same axis has no player on it, you can't skip over it
-                if (this.getFieldAtPosition(i, toPosition.y).getPlayer() === null) {
+                x = i;                             // X position 
+                y = toPosition.y;                  // Y position
+                f = this.getFieldAtPosition(x, y); // Field
+                p = f.getPlayer();                 // Player at field
+
+                if (p === null) {
+                    // Field is empty; if a field between from and to on the same axis,
+                    // has no player on it, the player can't skip over it
                     return false;
                 }
+                if (p !== player && simulate === false) {
+                    // Jumping over another player; kills it
+                    f.setPlayer(null);
+                }
             }
+            if (simulate === false) {
+                fromField.setPlayer(null);
+                toField.setPlayer(player);
 
-            fromField.setPlayer(null);
-            toField.setPlayer(player);
-
-            this._game.turn();
+                this._game.turn();
+            }
 
             return true;
         }
         if (Math.abs(fromPosition.x - toPosition.x) === Math.abs(fromPosition.y - toPosition.y)) {
             // Moving diagonally
             for (i = Math.abs(fromPosition.x - toPosition.x) - 1; i !== 0; i -= 1) {
-                // If a field between from and to on the same axis has no player on it, you can't skip over it
-                if (this.getFieldAtPosition(fromPosition.x + i * xd, fromPosition.y + i * yd).getPlayer() === null) {
+                x = fromPosition.x + i * xd;       // X position 
+                y = fromPosition.y + i * yd;       // Y position
+                f = this.getFieldAtPosition(x, y); // Field
+                p = f.getPlayer();                 // Player at field
+
+                if (p === null) {
+                    // Field is empty; if a field between from and to on the same axis,
+                    // has no player on it, the player can't skip over it
                     return false;
                 }
+                if (p !== player && simulate === false) {
+                    // Jumping over another player; kills it
+                    f.setPlayer(null);
+                }
             }
+            if (simulate === false) {
+                fromField.setPlayer(null);
+                toField.setPlayer(player);
 
-            fromField.setPlayer(null);
-            toField.setPlayer(player);
-
-            this._game.turn();
+                this._game.turn();
+            }
 
             return true;
         }
