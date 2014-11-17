@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Manspel - movement test</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <script type="text/javascript" src="../primish-min.js"></script>
+    <script type="text/javascript" src="../manspel.js"></script>
+	<script src="tinytest.js"></script>
+</head>
+<body>
+	<script>
+		var manspel = new Manspel();
+		var board   = manspel.getBoard();
+
+		var p1 = manspel.getPlayerOne();
+		var p2 = manspel.getPlayerTwo();
+
+		tests({
+			'Move player one from B2 to D4': function() {
+				var move = board.move(p1, board.positionToIndex(1, 1), board.positionToIndex(3, 3));
+				eq(true, move == true);
+			},
+			'Move player one from C1 to C5': function() {
+				eq(false, board.move(p1, board.positionToIndex(1, 1), board.positionToIndex(3, 3)));
+			},
+		});
+	</script>
+</body>
+</html>
